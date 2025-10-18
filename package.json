@@ -1,0 +1,11 @@
+{
+  "name": "backend_repositories_oxxogh",
+  "version": "1.0.0",
+  "description": "Sync api github with db",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jose Toledano",
+  "license": "ISC"
+}
