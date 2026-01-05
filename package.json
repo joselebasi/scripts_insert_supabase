@@ -9,9 +9,10 @@
   "author": "Jose Toledano",
   "license": "ISC",
   "dependencies": {
-    "@octokit/rest": "^22.0.0",
     "@octokit/graphql": "^4.7.0",
+    "@octokit/rest": "^22.0.0",
     "@supabase/supabase-js": "^2.75.1",
+    "bottleneck": "^2.19.5",
     "dotenv": "^17.2.3"
   }
 }

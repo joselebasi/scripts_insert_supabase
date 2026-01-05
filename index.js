@@ -1,6 +1,6 @@
 require('dotenv').config();
 const { Octokit } = require('@octokit/rest');
-const { insertRepositoryInfo, insertUserLastContribution} = require('./db');
+const { insertRepositoryInfo, insertMemberLastContribution, insertMemberTeam} = require('./db');
 const { graphql } = require("@octokit/graphql");
 
 const graphqlWithAuth = graphql.defaults({
@@ -81,37 +81,34 @@ async function getPeopleOrg(ORG_NAME) {
         `   Activity → Total: ${activity.total}, Last: ${activity.lastContribution ?? "No activity"}`
       );
 
+      try {
+        await insertMemberLastContribution (
+          member.id,
+          member.login,
+          email || '',
+          member.html_url,
+          activity.lastContribution
+        );
+      } catch (err) {
+        console.error(`Failed to insert last contribution for ${member.login} in team ${team}:`, err.message);
+      }
+
       const teams = await getUserTeamsGraphQL(ORG_NAME, member.login);
 
       if (teams.length > 1) {
         for (const team of teams) {
           try {
-            await insertUserLastContribution (
-              member.login,
-              email || '',
-              member.html_url,
-              team,
-              activity.lastContribution
+            await insertMemberTeam (
+              member.id,
+              team
             );
           } catch (err) {
-            console.error(`Failed to insert last contribution for ${member.login} in team ${team}:`, err.message);
+            console.error(`Failed to insert team ${team} for ${member.login}:`, err.message);
           }
-        console.log(`   Teams → ${teams.join(", ") || "No teams"}`);
         }
         
       } else {
-        try {
-          await insertUserLastContribution (
-            member.login,
-            email || '',
-            member.html_url,
-            'No team',
-            activity.lastContribution
-          );
-        } catch (err) {
-          console.error(`Failed to insert last contribution for ${member.login} in team ${team}:`, err.message);
-        } 
-      
+       console.log(` member ${member.login} without teams.`);
     }
     }
   } catch (error) {

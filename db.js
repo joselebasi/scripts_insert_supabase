@@ -33,10 +33,10 @@ export const getAllRepositories = async () => {
   return data;
 }
 
-export const insertUserLastContribution = async (username, email, url, team, last_contribution_date) => {
+export const insertMemberLastContribution = async (member_username, email, url, last_contribution_date, member_id, inactive_days) => {
   const { data, error } = await supabase
-    .from('bo_user_last_contribution')
-    .insert({ username, email, url, team, last_contribution_date });
+    .from('bo_member_last_contribution')
+    .insert({ member_username, email, url, last_contribution_date, member_id, inactive_days });
   if (error) {
     console.error('Error inserting user last contribution:', error.message);
     throw error;
@@ -45,3 +45,17 @@ export const insertUserLastContribution = async (username, email, url, team, las
     success: true,
   }
 }
+
+export const insertMemberTeam = async (member_id, team) => {
+  const { data, error } = await supabase
+    .from('bo_member_team')
+    .insert({ member_id, team });
+  if (error) {
+    console.error('Error inserting member team:', error.message);
+    throw error;
+  } 
+  return {
+    success: true,
+  }
+}
+
