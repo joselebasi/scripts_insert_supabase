@@ -3,6 +3,7 @@
  *
  * Obtiene:
  * - Miembros de la org
+ * - Tipo de miembro (Owner | Member | Suspended member)
  * - Última actividad REAL (commit, PR, review, issue)
  * - Días de inactividad
  * - Teams del miembro
@@ -59,6 +60,36 @@ function daysInactive(lastDate) {
   return Math.floor(
     (Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
   );
+}
+
+// =========================================
+// 🔹 MEMBER TYPE (Owner | Member | Suspended)
+// =========================================
+
+async function getOrgMemberType(login) {
+  try {
+    const res = await limiter.schedule(() =>
+      octokit.orgs.getMembershipForUser({
+        org: ORG_NAME,
+        username: login,
+      })
+    );
+
+    const { state, role } = res.data;
+
+    if (state === 'suspended') {
+      return 'Suspended member';
+    }
+
+    if (state === 'active' && role === 'admin') {
+      return 'Owner';
+    }
+
+    return 'Member';
+  } catch (err) {
+    console.warn(`⚠️ No se pudo obtener member_type de ${login}`);
+    return 'Unknown';
+  }
 }
 
 // =========================================
@@ -134,7 +165,6 @@ async function getLastActivity(login) {
 
   if (days.length === 0) return null;
 
-  // Último día con actividad
   return new Date(days.at(-1).date);
 }
 
@@ -181,8 +211,10 @@ async function processOrgMembers() {
     const lastActivity = await getLastActivity(member.login);
     const inactiveDays = daysInactive(lastActivity);
     const email = await getUserEmail(member.login);
+    const memberType = await getOrgMemberType(member.login);
 
     console.log({
+      memberType,
       lastActivity: lastActivity?.toISOString() ?? null,
       inactiveDays,
       email,
@@ -195,7 +227,8 @@ async function processOrgMembers() {
       member.html_url,
       lastActivity ? lastActivity.toISOString() : null,
       member.id,
-      inactiveDays
+      inactiveDays,
+      memberType // 👈 NUEVO CAMPO
     );
 
     // Insertar teams
@@ -210,9 +243,7 @@ async function processOrgMembers() {
     }
 
     console.log(
-      `   ✅ Última actividad: ${
-        lastActivity ? lastActivity.toISOString() : 'N/A'
-      } | Inactivo: ${inactiveDays} días | Teams: ${teams.length}`
+      `   ✅ ${memberType} | Inactivo: ${inactiveDays} días | Teams: ${teams.length}`
     );
   }
 }
