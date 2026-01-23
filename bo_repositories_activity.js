@@ -28,10 +28,14 @@ async function getWFRepos() {
 
       let id_type_repository;
       const repoName = repo.name.toUpperCase();
-      if (repoName.includes('BD') || repoName.includes('DB')) {
-        id_type_repository = 1;
-      } else if (repoName.includes('SHELL')) {
+      if ((repoName.includes('SHELL') && repoName.includes('ORA'))) {
         id_type_repository = 2;
+      } else if ((repoName.includes('BD') || repoName.includes('DB')) && repoName.includes('WF')) {
+        id_type_repository = 4;
+      } else if (repoName.includes('ORA')) {
+        id_type_repository = 1;
+      } else if (repoName.includes('SHELL') && repoName.includes('WF')) {
+        id_type_repository = 5;
       } else {
         id_type_repository = 3;
       }
