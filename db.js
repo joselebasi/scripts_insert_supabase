@@ -5,11 +5,11 @@ const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_KEY
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-export const insertRepositoryInfo = async (name, url, checkmarx_flag, change_velocity_flag, continuous_build_flag, pushed_at_github, created_at_github, id_type_repository) => {
+export const insertRepositoryInfo = async (name, url, checkmarx_flag, change_velocity_flag, continuous_build_flag, pushed_at_github, created_at_github, id_type_repository, created_at) => {
   const { data, error } = await supabase
     .from('wf_repositories_data')
     .insert(
-      { name, url, checkmarx_flag, change_velocity_flag, continuous_build_flag, pushed_at_github, created_at_github, id_type_repository }
+      { name, url, checkmarx_flag, change_velocity_flag, continuous_build_flag, pushed_at_github, created_at_github, id_type_repository, created_at }
     )
   if (error) {
     console.error('Error inserting repository info:', error.message);
@@ -65,6 +65,19 @@ export const insertRepositoryActivity = async (name, url, branch, last_commit_da
     .insert({ name, url, branch, last_commit_date, member_name, id_type_repository, email });
   if (error) {
     console.error('Error inserting repository activity:', error.message);
+    throw error;
+  }
+  return {
+    success: true,
+  }
+}
+
+export const insertOpenPullRequests = async (author, source_branch, target_branch, title, url, id_pull_request, reviewers, created_at) => {
+  const { data, error } = await supabase
+    .from('bo_open_pull_requests')
+    .insert({ author, source_branch, target_branch, title, url, id_pull_request, reviewers, created_at });
+  if (error) {
+    console.error('Error inserting open pull requests:', error.message);
     throw error;
   }
   return {
