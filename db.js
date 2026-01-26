@@ -72,10 +72,10 @@ export const insertRepositoryActivity = async (name, url, branch, last_commit_da
   }
 }
 
-export const insertOpenPullRequests = async (author, source_branch, target_branch, title, url, id_pull_request, reviewers, created_at) => {
+export const insertOpenPullRequests = async (author, source_branch, target_branch, title, url, id_pull_request, reviewers, created_at, name_repository) => {
   const { data, error } = await supabase
     .from('bo_open_pull_requests')
-    .insert({ author, source_branch, target_branch, title, url, id_pull_request, reviewers, created_at });
+    .insert({ author, source_branch, target_branch, title, url, id_pull_request, reviewers, created_at, name_repository });
   if (error) {
     console.error('Error inserting open pull requests:', error.message);
     throw error;
