@@ -85,3 +85,17 @@ export const insertOpenPullRequests = async (author, source_branch, target_branc
   }
 }
 
+export const insertRepositoryThresholdActivity = async (limit_containers_low, limit_containers_low_last_update, limit_containers_medium, limit_containers_medium_last_update, limit_containers_high, limit_containers_high_last_update, limit_containers_critical, limit_containers_critical_last_update, limit_sast_low, limit_sast_low_last_update, limit_sast_medium, limit_sast_medium_last_update, limit_sast_high, limit_sast_high_last_update, limit_sast_critical, limit_sast_critical_last_update, limit_sca_low, limit_sca_low_last_update, limit_sca_medium, limit_sca_medium_last_update, limit_sca_high, limit_sca_high_last_update, limit_sca_critical, limit_sca_critical_last_update, name_repository, owner, url_variables) => {
+  const { data, error } = await supabase
+    .from('bo_repository_threshold_activity')
+    .insert({ limit_containers_low, limit_containers_low_last_update, limit_containers_medium, limit_containers_medium_last_update, limit_containers_high, limit_containers_high_last_update, limit_containers_critical, limit_containers_critical_last_update, limit_sast_low, limit_sast_low_last_update, limit_sast_medium, limit_sast_medium_last_update, limit_sast_high, limit_sast_high_last_update, limit_sast_critical, limit_sast_critical_last_update, limit_sca_low, limit_sca_low_last_update, limit_sca_medium, limit_sca_medium_last_update, limit_sca_high, limit_sca_high_last_update, limit_sca_critical, limit_sca_critical_last_update, name_repository, owner, url_variables });
+  if (error) {
+    console.error('Error inserting repository threshold activity:', error.message);
+    throw error;
+  }
+  return {
+    success: true,
+  }
+}
+
+
