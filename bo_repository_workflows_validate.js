@@ -21,6 +21,11 @@ async function getWFRepos() {
     let haveCheckmarx = false;
     let haveChangeVelocity = false;
     let haveContinuousBuild = false;
+    let haveConjur = false;
+    let haveReleaseSharedpoint = false;
+    let haveReleaseGitHub = false;
+    let haveValidatePR = false;
+
     console.log(`Processing single repo: ${targetRepo}`);
 
     // get only the forder .github/workflows of the repository
@@ -54,6 +59,16 @@ async function getWFRepos() {
             console.log(`Found Checkmarx usage in: ${file.name}`);
           }
 
+          if (content.includes('.github/actions/props-conjur.yml')) {
+            haveConjur = true;
+            console.log(`Found Conjur usage in: ${file.name}`);
+          }
+
+          if (content.includes('ServiceNow/servicenow-devops-change')) {
+            haveChangeVelocity = true;
+            console.log(`Found Change Velocity usage in: ${file.name}`);
+          }
+
           if (file.name.includes('continuous-build')) {
             haveContinuousBuild = true;
           }
@@ -64,6 +79,8 @@ async function getWFRepos() {
     console.log(`Results for ${targetRepo}:`);
     console.log(` - Checkmarx: ${haveCheckmarx}`);
     console.log(` - Continuous Build: ${haveContinuousBuild}`);
+    console.log(` - Conjur: ${haveConjur}`);
+    console.log(` - Change Velocity: ${haveChangeVelocity}`);
 
 
   } catch (error) {
