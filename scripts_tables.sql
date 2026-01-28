@@ -30,3 +30,21 @@ create table public.bo_repository_threshold_activity (
   url_variables text null,
   constraint bo_repository_threshold_activity_pkey primary key (id)
 ) TABLESPACE pg_default;
+
+
+create table public.bo_repository_workflows_activity (
+  id bigint generated always as identity not null,
+  created_at timestamp with time zone not null default now(),
+  have_checkmarx boolean null,
+  have_continuous_build boolean null,
+  have_conjur boolean null,
+  have_change_velocity boolean null,
+  have_release_sharedpoint boolean null,
+  have_release_github boolean null,
+  have_validate_pr boolean null,
+  name_repository text null,
+  id_type_repository integer null,
+  owner text null,
+  url_workflows text null,
+  constraint bo_repository_workflows_activity_pkey primary key (id)
+) TABLESPACE pg_default;

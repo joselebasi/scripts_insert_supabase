@@ -1,12 +1,6 @@
 require('dotenv').config();
 const { Octokit } = require('@octokit/rest');
-const { graphql } = require("@octokit/graphql");
-
-const graphqlWithAuth = graphql.defaults({
-  headers: {
-    authorization: `token ${process.env.GITHUB_TOKEN}`,
-  },
-});
+const { insertRepositoryWorkflowsValidate } = require('./db.js');
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
@@ -17,6 +11,21 @@ const ORG_NAME = 'BUS-BackOffice';
 
 async function getWFRepos() {
   const targetRepo = 'WF_PIEVE_SIV';
+
+  let id_type_repository;
+  const repoName = targetRepo.toUpperCase();
+  if ((repoName.includes('SHELL') && repoName.includes('ORA'))) {
+    id_type_repository = 2;
+  } else if ((repoName.includes('BD') || repoName.includes('DB')) && repoName.includes('WF')) {
+    id_type_repository = 4;
+  } else if (repoName.includes('ORA')) {
+    id_type_repository = 1;
+  } else if (repoName.includes('SHELL') && repoName.includes('WF')) {
+    id_type_repository = 5;
+  } else {
+    id_type_repository = 3;
+  }
+
   try {
     let haveCheckmarx = false;
     let haveChangeVelocity = false;
@@ -33,6 +42,7 @@ async function getWFRepos() {
       owner: ORG_NAME,
       repo: targetRepo,
       path: '.github/workflows',
+      ref: 'develop',
       headers: {
         'X-GitHub-Api-Version': '2022-11-28'
       }
@@ -47,6 +57,7 @@ async function getWFRepos() {
             owner: ORG_NAME,
             repo: targetRepo,
             path: file.path,
+            ref: 'develop',
             headers: {
               'X-GitHub-Api-Version': '2022-11-28'
             }
@@ -54,7 +65,7 @@ async function getWFRepos() {
 
           const content = Buffer.from(fileContent.content, 'base64').toString('utf-8');
 
-          if (content.includes('uses: BUS-BackOffice/BO_Pipelines/.github/workflows/checkmarx-workflow.yml@main')) {
+          if (content.includes('checkmarx-analysis:')) {
             haveCheckmarx = true;
             console.log(`Found Checkmarx usage in: ${file.name}`);
           }
@@ -69,8 +80,24 @@ async function getWFRepos() {
             console.log(`Found Change Velocity usage in: ${file.name}`);
           }
 
-          if (file.name.includes('continuous-build')) {
+          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-web-ci-workflow.yml') || content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-publish-workflow.yml') || content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-ci-workflow.yml')) {
             haveContinuousBuild = true;
+            console.log(`Found Continuous Build usage in: ${file.name}`);
+          }
+
+          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-web-ci-workflow.yml') && content.includes('cringdahl/sharepoint-file-upload-action')) {
+            haveReleaseSharedpoint = true;
+            console.log(`Found Release Sharedpoint usage in: ${file.name}`);
+          }
+
+          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/release-github.yml') && content.includes('needs: version_ci')) {
+            haveReleaseGitHub = true;
+            console.log(`Found Release GitHub usage in: ${file.name}`);
+          }
+
+          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/validate-pr-backoffice.yml')) {
+            haveValidatePR = true;
+            console.log(`Found Validate PR usage in: ${file.name}`);
           }
         }
       }
@@ -81,6 +108,13 @@ async function getWFRepos() {
     console.log(` - Continuous Build: ${haveContinuousBuild}`);
     console.log(` - Conjur: ${haveConjur}`);
     console.log(` - Change Velocity: ${haveChangeVelocity}`);
+    console.log(` - Release Sharedpoint: ${haveReleaseSharedpoint}`);
+    console.log(` - Release GitHub: ${haveReleaseGitHub}`);
+    console.log(` - Validate PR: ${haveValidatePR}`);
+
+    const url_workflows = `https://github.com/${ORG_NAME}/${targetRepo}/.github/workflows`;
+
+    insertRepositoryWorkflowsValidate(haveCheckmarx, haveContinuousBuild, haveConjur, haveChangeVelocity, haveReleaseSharedpoint, haveReleaseGitHub, haveValidatePR, targetRepo, id_type_repository, ORG_NAME, url_workflows);
 
 
   } catch (error) {
