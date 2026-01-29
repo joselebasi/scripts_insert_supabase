@@ -10,7 +10,7 @@ const ORG_NAME = 'BUS-BackOffice';
 
 
 async function getWFRepos() {
-  const targetRepo = 'WF_PIEVE_SIV';
+  const targetRepo = 'WF_SEMBRADOTIENDAV2_BE';
 
   let id_type_repository;
   const repoName = targetRepo.toUpperCase();
@@ -31,9 +31,10 @@ async function getWFRepos() {
     let haveChangeVelocity = false;
     let haveContinuousBuild = false;
     let haveConjur = false;
-    let haveReleaseSharedpoint = false;
-    let haveReleaseGitHub = false;
+    let haveReleaseSharepoint = false;
+    let haveReleaseGithub = false;
     let haveValidatePR = false;
+    let isCloud = false;
 
     console.log(`Processing single repo: ${targetRepo}`);
 
@@ -70,7 +71,7 @@ async function getWFRepos() {
             console.log(`Found Checkmarx usage in: ${file.name}`);
           }
 
-          if (content.includes('.github/actions/props-conjur.yml')) {
+          if (content.includes('actions/props-conjur')) {
             haveConjur = true;
             console.log(`Found Conjur usage in: ${file.name}`);
           }
@@ -80,24 +81,32 @@ async function getWFRepos() {
             console.log(`Found Change Velocity usage in: ${file.name}`);
           }
 
-          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-web-ci-workflow.yml') || content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-publish-workflow.yml') || content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-ci-workflow.yml')) {
+          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-web-ci-workflow.yml')
+            || content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-publish-workflow.yml')
+            || content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-ci-workflow.yml')
+            || (content.includes('docker build') && content.includes('docker push'))) {
             haveContinuousBuild = true;
             console.log(`Found Continuous Build usage in: ${file.name}`);
           }
 
-          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/dotnet-web-ci-workflow.yml') && content.includes('cringdahl/sharepoint-file-upload-action')) {
-            haveReleaseSharedpoint = true;
-            console.log(`Found Release Sharedpoint usage in: ${file.name}`);
+          if (content.includes('cringdahl/sharepoint-file-upload-action')) {
+            haveReleaseSharepoint = true;
+            console.log(`Found Release Sharepoint usage in: ${file.name}`);
           }
 
-          if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/release-github.yml') && content.includes('needs: version_ci')) {
-            haveReleaseGitHub = true;
-            console.log(`Found Release GitHub usage in: ${file.name}`);
+          if (content.includes('version_ci:') || content.includes('ncipollo/release-action')) {
+            haveReleaseGithub = true;
+            console.log(`Found Release Github usage in: ${file.name}`);
           }
 
           if (content.includes('BUS-BackOffice/BO_Pipelines/.github/workflows/validate-pr-backoffice.yml')) {
             haveValidatePR = true;
             console.log(`Found Validate PR usage in: ${file.name}`);
+          }
+
+          if (content.includes('azure/webapps-deploy@v2')) {
+            isCloud = true;
+            console.log(`Found Cloud usage in: ${file.name}`);
           }
         }
       }
@@ -108,13 +117,14 @@ async function getWFRepos() {
     console.log(` - Continuous Build: ${haveContinuousBuild}`);
     console.log(` - Conjur: ${haveConjur}`);
     console.log(` - Change Velocity: ${haveChangeVelocity}`);
-    console.log(` - Release Sharedpoint: ${haveReleaseSharedpoint}`);
-    console.log(` - Release GitHub: ${haveReleaseGitHub}`);
+    console.log(` - Release Sharepoint: ${haveReleaseSharepoint}`);
+    console.log(` - Release Github: ${haveReleaseGithub}`);
     console.log(` - Validate PR: ${haveValidatePR}`);
+    console.log(` - Cloud: ${isCloud}`);
 
-    const url_workflows = `https://github.com/${ORG_NAME}/${targetRepo}/.github/workflows`;
+    const url_workflows = `https://github.com/${ORG_NAME}/${targetRepo}/tree/develop/.github/workflows`;
 
-    insertRepositoryWorkflowsValidate(haveCheckmarx, haveContinuousBuild, haveConjur, haveChangeVelocity, haveReleaseSharedpoint, haveReleaseGitHub, haveValidatePR, targetRepo, id_type_repository, ORG_NAME, url_workflows);
+    //insertRepositoryWorkflowsValidate(haveCheckmarx, haveContinuousBuild, haveConjur, haveChangeVelocity, haveReleaseSharepoint, haveReleaseGithub, haveValidatePR, targetRepo, id_type_repository, ORG_NAME, url_workflows, isCloud);
 
 
   } catch (error) {

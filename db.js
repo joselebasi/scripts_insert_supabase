@@ -98,10 +98,10 @@ export const insertRepositoryThresholdActivity = async (limit_containers_low, li
   }
 }
 
-export const insertRepositoryWorkflowsValidate = async (have_checkmarx, have_continuous_build, have_conjur, have_change_velocity, have_release_sharedpoint, have_release_github, have_validate_pr, name_repository, id_type_repository, owner, url_workflows) => {
+export const insertRepositoryWorkflowsValidate = async (have_checkmarx, have_continuous_build, have_conjur, have_change_velocity, have_release_sharepoint, have_release_github, have_validate_pr, name_repository, id_type_repository, owner, url_workflows, is_cloud) => {
   const { data, error } = await supabase
     .from('bo_repository_workflows_activity')
-    .insert({ have_checkmarx, have_continuous_build, have_conjur, have_change_velocity, have_release_sharedpoint, have_release_github, have_validate_pr, name_repository, id_type_repository, owner, url_workflows });
+    .insert({ have_checkmarx, have_continuous_build, have_conjur, have_change_velocity, have_release_sharepoint, have_release_github, have_validate_pr, name_repository, id_type_repository, owner, url_workflows, is_cloud });
   if (error) {
     console.error('Error inserting repository workflows validate:', error.message);
     throw error;
