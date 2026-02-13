@@ -50,3 +50,20 @@ create table public.bo_repository_workflows_activity (
   constraint bo_repository_workflows_activity_pkey primary key (id),
   constraint bo_repository_workflows_activity_id_type_repository_fkey foreign KEY (id_type_repository) references wf_type_repository (id)
 ) TABLESPACE pg_default;
+
+
+create table public.bo_repository_status (
+  id bigint generated always as identity not null,
+  created_at timestamp with time zone not null default now(),
+  status text null,
+  type text null,
+  url_repository text null,
+  id_type_repository integer null,
+  tech text null,
+  toolbuild text null,
+  framework text null,
+  version text null,
+  release text null,
+  constraint bo_repository_status_pkey primary key (id),
+  constraint bo_repository_status_id_type_repository_fkey foreign KEY (id_type_repository) references wf_type_repository (id)
+) TABLESPACE pg_default;

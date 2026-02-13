@@ -111,5 +111,19 @@ export const insertRepositoryWorkflowsValidate = async (have_checkmarx, have_con
   }
 }
 
+export const insertRepositoryStatus = async (status, type, url_repository, id_type_repository, tech, toolbuild, framework, version, release) => {
+  const { data, error } = await supabase
+    .from('bo_repository_status')
+    .insert({ status, type, url_repository, id_type_repository, tech, toolbuild, framework, version, release });
+  if (error) {
+    console.error('Error inserting repository status:', error.message);
+    throw error;
+  }
+  return {
+    success: true,
+  }
+}
+
+
 
 
